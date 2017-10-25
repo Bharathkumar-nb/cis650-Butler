@@ -2,14 +2,15 @@ import time, socket, sys
 from datetime import datetime as dt
 import paho.mqtt.client as paho
 import signal
-import mraa
+#import mraa
 
 leds = []
-for i in range(2,10):
+'''for i in range(2,10):
     led = mraa.Gpio(i)
     led.dir(mraa.DIR_OUT)
     led.write(1)
     leds.append(led)
+'''
 
 class Fork(object):
     """docstring for Fork"""
@@ -25,10 +26,30 @@ class Fork(object):
         self.mqtt_client.on_disconnect = self.on_disconnect
         self.mqtt_client.on_log = self.on_log
         self.mqtt_topic = 'kappa/fork'
-        self.mqtt_client.will_set(self.mqtt_topic, '______________Will of '+self.MY_NAME+' _________________\n\n', 0, False)
+        self.mqtt_client.will_set(self.mqtt_topic, '______________Will of '+self.fork_id+' _________________\n\n', 0, False)
         self.mqtt_client.connect('sansa.cs.uoregon.edu', '1883',keepalive=300)
         self.mqtt_client.subscribe('kappa/butler')
         self.mqtt_client.loop_start()
+
+        self.isRegistered = False
+
+
+        # Start process
+        self.register()
+
+    def register(self):
+        while not self.isRegistered:
+            self.mqtt_client.publish(self.mqtt_topic, self.fork_id+'.register')
+            time.sleep(3)
+
+
+    def on_message(self, client, userdata, msg):
+        print(msg.payload)
+        fork_id, content = msg.payload.split('.')
+        if fork_id == self.fork_id:
+            if content=='forkRegistered':
+                self.isRegistered=True
+
 
     # Deal with control-c
     def control_c_handler(self, signum, frame):
@@ -56,7 +77,7 @@ def main():
     if arr[2] not in '12345678' or len(arr[2]) > 1:
         print ('Please enter valid led number between 1 to 8')
         sys.exit(1)
-    Car(arr[1], arr[2])
+    Fork(arr[1], arr[2])
     while True:
         time.sleep(10)
 
