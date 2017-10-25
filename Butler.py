@@ -2,19 +2,20 @@ import time, socket, sys
 from datetime import datetime as dt
 import paho.mqtt.client as paho
 import signal
-import mraa
-
+#import mraa
+'''
 leds = []
 for i in range(2,10):
     led = mraa.Gpio(i)
     led.dir(mraa.DIR_OUT)
     led.write(1)
     leds.append(led)
-
+'''
 class Butler(object):
     """docstring for Butler"""
     def __init__(self, max_counter):
-        self.semaphore = max_counter
+        self.MY_NAME = 'Butler'
+        self.semaphore = int(max_counter)
         self.philosophers_queue = []
         self.forkStatuses = {}
 
@@ -24,7 +25,6 @@ class Butler(object):
         # MQTT initialization
         self.mqtt_client = paho.Client()
         self.mqtt_client.on_connect = self.on_connect
-        self.mqtt_client.on_message = self.on_message
         self.mqtt_client.message_callback_add('kappa/philosopher', self.on_message_from_philosopher)
         self.mqtt_client.message_callback_add('kappa/fork', self.on_message_from_fork)
         self.mqtt_client.on_disconnect = self.on_disconnect
@@ -74,6 +74,9 @@ class Butler(object):
         if content == 'arise':
             self.semaphore += 1
             self.handleQueue()
+
+    def on_message_from_fork(self, client, userdata, msg):
+        pass
 
     def handleQueue(self):
         if len(philosophers_queue) != 0:

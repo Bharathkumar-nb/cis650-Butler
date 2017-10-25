@@ -2,15 +2,16 @@ import time, socket, sys
 from datetime import datetime as dt
 import paho.mqtt.client as paho
 import signal
-import mraa
+#import mraa
 
+'''
 leds = []
 for i in range(2,10):
     led = mraa.Gpio(i)
     led.dir(mraa.DIR_OUT)
     led.write(1)
     leds.append(led)
-
+'''
 class Philosopher(object):
     """docstring for Philosopher"""
     def __init__(self, philosopher_id, led_no, left_fork, right_fork):
@@ -35,7 +36,7 @@ class Philosopher(object):
         self.mqtt_client.on_disconnect = self.on_disconnect
         self.mqtt_client.on_log = self.on_log
         self.mqtt_topic = 'kappa/philosopher'
-        self.mqtt_client.will_set(self.mqtt_topic, '______________Will of '+self.MY_NAME+' _________________\n\n', 0, False)
+        self.mqtt_client.will_set(self.mqtt_topic, '______________Will of '+self.philosopher_id+' _________________\n\n', 0, False)
         self.mqtt_client.connect('sansa.cs.uoregon.edu', '1883',keepalive=300)
         self.mqtt_client.subscribe('kappa/butler')
         self.mqtt_client.loop_start()
@@ -66,8 +67,8 @@ class Philosopher(object):
         philosopher_id, content = msg.payload.split('.')
         if philosopher_id == self.philosopher_id:
             if content == 'accepted':
-                self.sendForkRequest('Right')
                 self.isAccepted = True
+                self.sendForkRequest('Right')
             if content == 'inQueue':
                 self.isWaiting = True
             if content == 'forkAccepted':
@@ -85,9 +86,10 @@ class Philosopher(object):
         self.isWaiting = False
         self.isLeftForkAccepted = False
         self.isRightForkAccepted = False
-        while not isAccepted and not isWaiting:
-            print(philosopher_id+'.sitRequest')
-            self.mqtt_client.publish(self.mqtt_topic, philosopher_id+'.sitRequest')
+        while not self.isAccepted and not self.isWaiting:
+            print(self.isAccepted)
+            print(self.philosopher_id+'.sitRequest')
+            self.mqtt_client.publish(self.mqtt_topic, self.philosopher_id+'.sitRequest')
             time.sleep(5)
 
     def sendForkRequest(self, fork):

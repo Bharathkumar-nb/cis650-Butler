@@ -14,7 +14,7 @@ for i in range(2,10):
 class Fork(object):
     """docstring for Fork"""
     def __init__(self, id, led_no):
-        self.id = id
+        self.fork_id = id
         self.led_no = led_no
         signal.signal(signal.SIGINT, self.control_c_handler)
 
