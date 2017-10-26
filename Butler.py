@@ -106,8 +106,8 @@ class Butler(object):
             self.mqtt_client.publish(self.mqtt_topic, key+'.forkRegistered')
 
     def handleQueue(self):
-        if len(philosophers_queue) != 0:
-            philosopher_id = philosophers_queue.pop(0)
+        if len(self.philosophers_queue) != 0:
+            philosopher_id = self.philosophers_queue.pop(0)
             self.semaphore -= 1
             print(philosopher_id+'.accepted')
             self.mqtt_client.publish(self.mqtt_topic, philosopher_id+'.accepted')
