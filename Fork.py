@@ -78,6 +78,9 @@ def main():
         print ('Please enter valid led number between 1 to 8')
         sys.exit(1)
     Fork(arr[1], arr[2])
+    Fork('a', 1)
+    Fork('b', 1)
+    Fork('c', 1)
     while True:
         time.sleep(10)
 

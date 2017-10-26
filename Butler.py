@@ -79,7 +79,6 @@ class Butler(object):
                 self.mqtt_client.publish(self.mqtt_topic, philosopher_id+'.forkAccepted')
             else:
                 self.fork_queue[fork_id].append(philosopher_id)
-                pass
             print(self.forkStatuses)
         if content == 'putFork':
             self.forkStatuses[fork_id] = False
