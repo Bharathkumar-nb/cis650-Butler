@@ -39,14 +39,15 @@ class Fork(object):
 
     def register(self):
         while not self.isRegistered:
+            print(self.fork_id+'.register')
             self.mqtt_client.publish(self.mqtt_topic, self.fork_id+'.register')
             time.sleep(3)
 
 
     def on_message(self, client, userdata, msg):
-        print(msg.payload)
         fork_id, content = msg.payload.split('.')
         if fork_id == self.fork_id:
+            print(msg.payload)
             if content=='forkRegistered':
                 self.isRegistered=True
 

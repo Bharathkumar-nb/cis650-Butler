@@ -57,18 +57,26 @@ class Butler(object):
 
     # Butler functions
     def on_message_from_philosopher(self, client, userdata, msg):
+        print(msg.payload)
+        print('Before: Semaphore', self.semaphore)
+        print('Before: philosophers_queue', self.philosophers_queue)
+        print('Before: forkStatuses', self.forkStatuses)
+        print('Before: fork_queue', self.fork_queue)
         key, content = msg.payload.split('.')
         if content == 'sitRequest':
             if self.semaphore > 1:
                 self.semaphore -= 1
+                print(key+'.sitRequestAccepted')
                 self.mqtt_client.publish(self.mqtt_topic, key+'.sitRequestAccepted')
             else:
                 self.philosophers_queue.append(key)
+                print(key+'.inQueue')
                 self.mqtt_client.publish(self.mqtt_topic, key+'.inQueue')
         if content == 'forkRequest':
             philosopher_id, fork_id = key.split('_')
             if not self.forkStatuses[fork_id]:
                 self.forkStatuses[fork_id] = True
+                print(philosopher_id+'.forkAccepted')
                 self.mqtt_client.publish(self.mqtt_topic, philosopher_id+'.forkAccepted')
             else:
                 self.fork_queue[fork_id].append(philosopher_id)
@@ -79,24 +87,31 @@ class Butler(object):
             if len(self.fork_queue[fork_id])>0:
                 philosopher_id = self.fork_queue[fork_id].pop(0)
                 self.forkStatuses[fork_id] = True
+                print(philosopher_id+'.forkAccepted')
                 self.mqtt_client.publish(self.mqtt_topic, philosopher_id+'.forkAccepted')
-
         if content == 'arise':
             self.semaphore += 1
             self.handleQueue()
+        print('After: Semaphore', self.semaphore)
+        print('After: philosophers_queue', self.philosophers_queue)
+        print('After: forkStatuses', self.forkStatuses)
+        print('After: fork_queue', self.fork_queue)
 
 
     def on_message_from_fork(self, client, userdata, msg):
+        print(msg.payload)
         key, content = msg.payload.split('.')
         if content == 'register':
             self.forkStatuses[key] = False
             self.fork_queue[key] = []
+            print(key+'.forkRegistered')
             self.mqtt_client.publish(self.mqtt_topic, key+'.forkRegistered')
 
     def handleQueue(self):
         if len(philosophers_queue) != 0:
             philosopher_id = philosophers_queue.pop(0)
             self.semaphore -= 1
+            print(philosopher_id+'.accepted')
             self.mqtt_client.publish(self.mqtt_topic, philosopher_id+'.accepted')
 
 def main():

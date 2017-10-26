@@ -22,7 +22,6 @@ class Philosopher(object):
 
         self.isAccepted = False
         self.isWaiting = False
-        self.isLeftForkAccepted = False
         self.isRightForkAccepted = False
 
 
@@ -64,21 +63,26 @@ class Philosopher(object):
         pass
 
     def on_message(self, client, userdata, msg):
-        print(msg.payload)
         philosopher_id, content = msg.payload.split('.')
         if philosopher_id == self.philosopher_id:
+            print(msg.payload)
+            print("Before: isAccepted", self.isAccepted)
+            print('Before: isWaiting',self.isWaiting)
+            print('Before: isRightForkAccepted',self.isRightForkAccepted)
             if content == 'sitRequestAccepted':
                 self.isAccepted = True
                 self.sendForkRequest(self.right_fork)
             if content == 'inQueue':
                 self.isWaiting = True
             if content == 'forkAccepted':
-                print(self.isRightForkAccepted)
                 if not self.isRightForkAccepted:
                     self.isRightForkAccepted = True
                     self.sendForkRequest(self.left_fork)
                 else:
                     self.start_eat()
+            print("After: isAccepted", self.isAccepted)
+            print('After: isWaiting',self.isWaiting)
+            print('After: isRightForkAccepted',self.isRightForkAccepted)
 
 
     # Philosoher functions
@@ -86,10 +90,8 @@ class Philosopher(object):
         # reset values
         self.isAccepted = False
         self.isWaiting = False
-        self.isLeftForkAccepted = False
         self.isRightForkAccepted = False
         while not self.isAccepted and not self.isWaiting:
-            print(self.isAccepted)
             print(self.philosopher_id+'.sitRequest')
             self.mqtt_client.publish(self.mqtt_topic, self.philosopher_id+'.sitRequest')
             time.sleep(5)
@@ -98,6 +100,7 @@ class Philosopher(object):
         while True:
             user_input = raw_input('Press y to pick {} Fork\n'.format(fork))
             if user_input.lower() == 'y':
+                print(self.philosopher_id+'_'+fork+'.forkRequest')
                 self.mqtt_client.publish(self.mqtt_topic, self.philosopher_id+'_'+fork+'.forkRequest')
                 break
 
