@@ -81,10 +81,10 @@ class Butler(object):
                 self.fork_queue[fork_id].append(philosopher_id)
             print(self.forkStatuses)
         if content == 'putFork':
-            self.forkStatuses[fork_id] = False
-            if len(self.fork_queue[fork_id])>0:
-                philosopher_id = self.fork_queue[fork_id].pop(0)
-                self.forkStatuses[fork_id] = True
+            self.forkStatuses[key] = False
+            if len(self.fork_queue[key])>0:
+                philosopher_id = self.fork_queue[key].pop(0)
+                self.forkStatuses[key] = True
                 print(philosopher_id+'.forkAccepted')
                 self.mqtt_client.publish(self.mqtt_topic, philosopher_id+'.forkAccepted')
         if content == 'arise':
