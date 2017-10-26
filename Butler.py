@@ -109,8 +109,8 @@ class Butler(object):
         if len(self.philosophers_queue) != 0:
             philosopher_id = self.philosophers_queue.pop(0)
             self.semaphore -= 1
-            print(philosopher_id+'.accepted')
-            self.mqtt_client.publish(self.mqtt_topic, philosopher_id+'.accepted')
+            print(philosopher_id+'.sitRequestAccepted')
+            self.mqtt_client.publish(self.mqtt_topic, philosopher_id+'.sitRequestAccepted')
 
 def main():
     arr = sys.argv
