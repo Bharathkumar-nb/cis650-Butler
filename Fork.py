@@ -27,7 +27,7 @@ class Fork(object):
         self.mqtt_client.on_log = self.on_log
         self.mqtt_topic = 'kappa/fork'
         self.mqtt_client.will_set(self.mqtt_topic, '______________Will of '+self.fork_id+' _________________\n\n', 0, False)
-        self.mqtt_client.connect('sansa.cs.uoregon.edu', '1883',keepalive=1000)
+        self.mqtt_client.connect('sansa.cs.uoregon.edu', '1883',keepalive=300)
         self.mqtt_client.subscribe('kappa/butler')
         self.mqtt_client.loop_start()
 
@@ -50,10 +50,6 @@ class Fork(object):
             print(msg.payload)
             if content=='forkRegistered':
                 self.isRegistered=True
-                while True:
-                    self.mqtt_client.publish(self.mqtt_topic, self.fork_id+'.keepalive')
-                    time.sleep(15)
-
 
     # Deal with control-c
     def control_c_handler(self, signum, frame):
@@ -70,8 +66,8 @@ class Fork(object):
         pass
 
     def on_log(self, client, userdata, level, buf):
-        #print("log: {}".format(buf)) # only semi-useful IMHO
-        pass
+        print("log: {}".format(buf)) # only semi-useful IMHO
+        # pass
 
 def main():
     arr = sys.argv

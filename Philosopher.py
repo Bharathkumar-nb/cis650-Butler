@@ -59,8 +59,8 @@ class Philosopher(object):
         pass
 
     def on_log(self, client, userdata, level, buf):
-        #print("log: {}".format(buf)) # only semi-useful IMHO
-        pass
+        print("log: {}".format(buf)) # only semi-useful IMHO
+        #pass
 
     def on_message(self, client, userdata, msg):
         philosopher_id, content = msg.payload.split('.')
@@ -115,12 +115,12 @@ class Philosopher(object):
                 break
 
     def sendPutFork(self, fork_id, fork_side):
-        while True:
-            user_input = raw_input('Press y to put {} fork down\n'.format(fork_side))
-            if user_input.lower() == 'y':
-                print(fork_id+'.putFork')
-                self.mqtt_client.publish(self.mqtt_topic, fork_id+'.putFork')
-                break
+        # while True:
+        user_input = raw_input('Press y to put {} fork down\n'.format(fork_side))
+        if user_input.lower() == 'y':
+            print(fork_id+'.putFork')
+            self.mqtt_client.publish(self.mqtt_topic, fork_id+'.putFork')
+        #    break
     
     def sendArise(self):
         while True:
