@@ -64,7 +64,7 @@ class Butler(object):
         print('Before: fork_queue', self.fork_queue)
         key, content = msg.payload.split('.')
         if content == 'sitRequest':
-            if self.semaphore > 1:
+            if self.semaphore > 0:
                 self.semaphore -= 1
                 print(key+'.sitRequestAccepted')
                 self.mqtt_client.publish(self.mqtt_topic, key+'.sitRequestAccepted')
