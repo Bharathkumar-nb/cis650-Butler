@@ -31,7 +31,7 @@ class Butler(object):
         self.mqtt_client.on_disconnect = self.on_disconnect
         self.mqtt_client.on_log = self.on_log
         self.mqtt_topic = 'kappa/butler'
-        self.mqtt_client.will_set(self.mqtt_topic, '______________Will of '+self.MY_NAME+' _________________\n\n', 0, False)
+        #self.mqtt_client.will_set(self.mqtt_topic, '______________Will of '+self.MY_NAME+' _________________\n\n', 0, False)
         self.mqtt_client.connect('sansa.cs.uoregon.edu', '1883',keepalive=300)
         self.mqtt_client.subscribe([('kappa/fork', 0), ('kappa/philosopher', 0)])
         self.mqtt_client.loop_start()
@@ -61,35 +61,44 @@ class Butler(object):
         print('Before: philosophers_queue', self.philosophers_queue)
         print('Before: forkStatuses', self.forkStatuses)
         print('Before: fork_queue', self.fork_queue)
-        key, content = msg.payload.split('.')
+        
+        philosopher_id, content = msg.payload.split('.')
+        if '_' in philosopher_id:
+            philosopher_id, fork_id = philosopher_id.split('_')
+
         if content == 'sitRequest':
             if self.semaphore > 0:
                 self.semaphore -= 1
-                print(key+'.sitRequestAccepted')
-                self.mqtt_client.publish(self.mqtt_topic, key+'.sitRequestAccepted')
+                print(philosopher_id+'.sitRequestAccepted')
+                self.mqtt_client.publish(self.mqtt_topic, philosopher_id+'.sitRequestAccepted')
             else:
-                self.philosophers_queue.append(key)
-                print(key+'.inQueue')
-                self.mqtt_client.publish(self.mqtt_topic, key+'.inQueue')
+                self.philosophers_queue.append(philosopher_id)
+                print(philosopher_id+'.inQueue')
+                self.mqtt_client.publish(self.mqtt_topic, philosopher_id+'.inQueue')
         if content == 'forkRequest':
-            philosopher_id, fork_id = key.split('_')
             if not self.forkStatuses[fork_id]:
                 self.forkStatuses[fork_id] = True
                 print(philosopher_id+'.forkAccepted')
-                self.mqtt_client.publish(self.mqtt_topic, philosopher_id+'.forkAccepted')
+                self.mqtt_client.publish(self.mqtt_topic, 
+                    philosopher_id+'_'+fork_id+'.forkAccepted')
             else:
                 self.fork_queue[fork_id].append(philosopher_id)
             print(self.forkStatuses)
         if content == 'putFork':
-            self.forkStatuses[key] = False
-            if len(self.fork_queue[key])>0:
-                philosopher_id = self.fork_queue[key].pop(0)
-                self.forkStatuses[key] = True
+            print(philosopher_id+'_'+fork_id+'.forkDoneUsing')
+            self.mqtt_client.publish(self.mqtt_topic, philosopher_id+'_'+fork_id+'.forkDoneUsing')
+            self.forkStatuses[fork_id] = False
+            if len(self.fork_queue[fork_id])>0:
+                philosopher_id = self.fork_queue[fork_id].pop(0)
+                self.forkStatuses[fork_id] = True
                 print(philosopher_id+'.forkAccepted')
                 self.mqtt_client.publish(self.mqtt_topic, philosopher_id+'.forkAccepted')
         if content == 'arise':
             self.semaphore += 1
+            print(philosopher_id+'.ariseAccepted')
+            self.mqtt_client.publish(self.mqtt_topic, philosopher_id+'.ariseAccepted')
             self.handleQueue()
+
         print('After: Semaphore', self.semaphore)
         print('After: philosophers_queue', self.philosophers_queue)
         print('After: forkStatuses', self.forkStatuses)

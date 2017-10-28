@@ -2,6 +2,7 @@ import time, socket, sys
 from datetime import datetime as dt
 import paho.mqtt.client as paho
 import signal
+#import Lights as light
 #import mraa
 
 leds = []
@@ -16,7 +17,7 @@ class Fork(object):
     """docstring for Fork"""
     def __init__(self, id, led_no):
         self.fork_id = id
-        self.led_no = led_no
+        self.led_no = int(led_no)
         signal.signal(signal.SIGINT, self.control_c_handler)
 
         # MQTT initialization
@@ -33,7 +34,6 @@ class Fork(object):
 
         self.isRegistered = False
 
-
         # Start process
         self.register()
 
@@ -46,6 +46,10 @@ class Fork(object):
 
     def on_message(self, client, userdata, msg):
         fork_id, content = msg.payload.split('.')
+        if '_' in fork_id:
+            philosopher_id, fork_id = fork_id.split('_')
+
+
         if fork_id == self.fork_id:
             print(msg.payload)
             if content=='forkRegistered':
@@ -79,7 +83,7 @@ def main():
         sys.exit(1)
     Fork(arr[1], arr[2])
     Fork('a', 1)
-    Fork('b', 1)
+    Fork('b', 2)
     #Fork('c', 1)
     while True:
         time.sleep(10)

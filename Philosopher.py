@@ -2,27 +2,19 @@ import time, socket, sys
 from datetime import datetime as dt
 import paho.mqtt.client as paho
 import signal
-#import mraa
 
-'''
-leds = []
-for i in range(2,10):
-    led = mraa.Gpio(i)
-    led.dir(mraa.DIR_OUT)
-    led.write(1)
-    leds.append(led)
-'''
 class Philosopher(object):
     """docstring for Philosopher"""
     def __init__(self, philosopher_id, led_no, left_fork, right_fork):
         self.philosopher_id = philosopher_id
-        self.led_no = led_no
+        self.led_no = int(led_no)
         self.left_fork = left_fork
         self.right_fork = right_fork
 
         self.isAccepted = False
         self.isWaiting = False
         self.isRightForkAccepted = False
+        self.isRightForkUsed = False
 
 
         # Handle Ctrl+C
@@ -35,7 +27,7 @@ class Philosopher(object):
         self.mqtt_client.on_disconnect = self.on_disconnect
         self.mqtt_client.on_log = self.on_log
         self.mqtt_topic = 'kappa/philosopher'
-        self.mqtt_client.will_set(self.mqtt_topic, '______________Will of '+self.philosopher_id+' _________________\n\n', 0, False)
+        #self.mqtt_client.will_set(self.mqtt_topic, '______________Will of '+self.philosopher_id+' _________________\n\n', 0, False)
         self.mqtt_client.connect('sansa.cs.uoregon.edu', '1883',keepalive=300)
         self.mqtt_client.subscribe('kappa/butler')
         self.mqtt_client.loop_start()
@@ -64,6 +56,10 @@ class Philosopher(object):
 
     def on_message(self, client, userdata, msg):
         philosopher_id, content = msg.payload.split('.')
+        if '_' in philosopher_id:
+            philosopher_id, fork_id = philosopher_id.split('_')
+
+
         if philosopher_id == self.philosopher_id:
             print(msg.payload)
             print("Before: isAccepted", self.isAccepted)
@@ -80,6 +76,20 @@ class Philosopher(object):
                     self.sendForkRequest(self.left_fork)
                 else:
                     self.start_eat()
+            if content == 'forkDoneUsing':
+                if not self.isRightForkUsed:
+                    self.isRightForkUsed = True
+                    self.sendPutFork(self.right_fork, 'right')
+                else:
+                    self.sendArise()
+            if content == 'ariseAccepted':
+                self.isAccepted = False
+                self.isRightForkAccepted = False
+                self.isRightForkUsed = False
+                print(self.philosopher_id+'.sitRequest')
+                self.mqtt_client.publish(self.mqtt_topic, self.philosopher_id+'.sitRequest')
+
+
             print("After: isAccepted", self.isAccepted)
             print('After: isWaiting',self.isWaiting)
             print('After: isRightForkAccepted',self.isRightForkAccepted)
@@ -91,10 +101,10 @@ class Philosopher(object):
         self.isAccepted = False
         self.isWaiting = False
         self.isRightForkAccepted = False
+        self.isRightForkUsed = False
         while not self.isAccepted and not self.isWaiting:
             print(self.philosopher_id+'.sitRequest')
             self.mqtt_client.publish(self.mqtt_topic, self.philosopher_id+'.sitRequest')
-            self.mqtt_client.loop()
             time.sleep(5)
 
     def sendForkRequest(self, fork):
@@ -103,28 +113,26 @@ class Philosopher(object):
             if user_input.lower() == 'y':
                 print(self.philosopher_id+'_'+fork+'.forkRequest')
                 self.mqtt_client.publish(self.mqtt_topic, self.philosopher_id+'_'+fork+'.forkRequest')
-                break
+                return
 
     def start_eat(self):
         while True:
             user_input = raw_input('Press y to Eat\n')
             if user_input.lower() == 'y':
-                time.sleep(5)
+                #time.sleep(5)
                 self.sendPutFork(self.left_fork, 'left')
-                self.mqtt_client.loop()
-                self.sendPutFork(self.right_fork, 'right')
-                self.mqtt_client.loop()
-                self.sendArise()
-                self.mqtt_client.loop()
-                break
+                
+                #self.mqtt_client.publish(self.mqtt_topic, self.philosopher_id + '.arise')
+                return
 
     def sendPutFork(self, fork_id, fork_side):
         while True:
             user_input = raw_input('Press y to put {} fork down\n'.format(fork_side))
             if user_input.lower() == 'y':
                 print(fork_id+'.putFork')
-                self.mqtt_client.publish(self.mqtt_topic, fork_id+'.putFork')
-                break
+                self.mqtt_client.publish(self.mqtt_topic,
+                self.philosopher_id+'_'+fork_id+'.putFork')
+                return
     
     def sendArise(self):
         while True:
@@ -132,8 +140,7 @@ class Philosopher(object):
             if user_input.lower() == 'y':
                 print(self.philosopher_id + '.arise')
                 self.mqtt_client.publish(self.mqtt_topic, self.philosopher_id + '.arise')
-                self.sendSitRequest()
-                break
+                return
 
 def main():
     arr = sys.argv
