@@ -36,7 +36,7 @@ class Philosopher(object):
         self.mqtt_client.on_log = self.on_log
         self.mqtt_topic = 'kappa/philosopher'
         self.mqtt_client.will_set(self.mqtt_topic, '______________Will of '+self.philosopher_id+' _________________\n\n', 0, False)
-        self.mqtt_client.connect('sansa.cs.uoregon.edu', '1883',keepalive=300)
+        self.mqtt_client.connect('sansa.cs.uoregon.edu', '1883')
         self.mqtt_client.subscribe('kappa/butler')
         self.mqtt_client.loop_start()
 
@@ -59,11 +59,10 @@ class Philosopher(object):
         pass
 
     def on_log(self, client, userdata, level, buf):
-        # only semi-useful IMHO
-        if userdata:
-            print("log: {}".format(userdata))
+        pass
 
     def on_message(self, client, userdata, msg):
+        print(msg.payload)
         philosopher_id, content = msg.payload.split('.')
         if '_' in philosopher_id:
             philosopher_id, fork_id = philosopher_id.split('_')

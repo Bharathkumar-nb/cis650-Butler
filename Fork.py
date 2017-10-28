@@ -37,12 +37,23 @@ class Fork(object):
         # Start process
         self.register()
 
-    def register(self):
-        while not self.isRegistered:
-            # print(self.fork_id+'.register')
-            self.mqtt_client.publish(self.mqtt_topic, self.fork_id+'.register')
-            time.sleep(3)
+    # Deal with control-c
+    def control_c_handler(self, signum, frame):
+        self.isDisconnected = True
+        self.mqtt_client.disconnect()
+        self.mqtt_client.loop_stop()  # waits until DISCONNECT message is sent out
+        print ("Exit")
+        sys.exit(0)
 
+    # MQTT Handlers
+    def on_connect(self, client, userdata, flags, rc):
+        pass
+
+    def on_disconnect(self, client, userdata, rc):
+        pass
+
+    def on_log(self, client, userdata, level, buf):
+        pass
 
     def on_message(self, client, userdata, msg):
         fork_id, content = msg.payload.split('.')
@@ -59,32 +70,19 @@ class Fork(object):
             if content  == 'forkDoneUsing':
                 self.turnOffLED()
 
-
-    # Deal with control-c
-    def control_c_handler(self, signum, frame):
-        self.isDisconnected = True
-        self.mqtt_client.disconnect()
-        self.mqtt_client.loop_stop()  # waits until DISCONNECT message is sent out
-        print ("Exit")
-        sys.exit(0)
-
-    def on_connect(self, client, userdata, flags, rc):
-        pass
-
-    def on_disconnect(self, client, userdata, rc):
-        print('disconnect', self.fork_id)
-        pass
-
-    def on_log(self, client, userdata, level, buf):
-        # only semi-useful IMHO
-        if userdata:
-            print("log: {}".format(userdata))
-
+    # LED functions
     def turnOnLED(self):
         leds[self.led_no].write(0)
 
     def turnOffLED(self):
         leds[self.led_no].write(1)
+
+    # Fork Functions
+    def register(self):
+        while not self.isRegistered:
+            # print(self.fork_id+'.register')
+            self.mqtt_client.publish(self.mqtt_topic, self.fork_id+'.register')
+            time.sleep(3)
 
 def main():
     arr = sys.argv

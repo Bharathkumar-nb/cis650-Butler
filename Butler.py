@@ -35,8 +35,8 @@ class Butler(object):
         self.mqtt_client.on_log = self.on_log
         self.mqtt_topic = 'kappa/butler'
         self.mqtt_client.will_set(self.mqtt_topic, '______________Will of '+self.MY_NAME+' _________________\n\n', 0, False)
-        self.mqtt_client.connect('sansa.cs.uoregon.edu', '1883',keepalive=300)
-        self.mqtt_client.subscribe([('kappa/fork', 0), ('kappa/philosopher', 0)])
+        self.mqtt_client.connect('sansa.cs.uoregon.edu', '1883')
+        self.mqtt_client.subscribe([('kappa/philosopher', 0), ('kappa/fork', 0)])
         self.mqtt_client.loop_start()
 
     # Deal with control-c
@@ -55,13 +55,11 @@ class Butler(object):
         pass
 
     def on_log(self, client, userdata, level, buf):
-        # only semi-useful IMHO
-        if userdata:
-            print("log: {}".format(userdata))
+        pass
 
     # Butler functions
     def on_message_from_philosopher(self, client, userdata, msg):
-        # print(msg.payload)
+        print(msg.payload)
         # print('Before: Semaphore', self.semaphore)
         # print('Before: philosophers_queue', self.philosophers_queue)
         # print('Before: forkStatuses', self.forkStatuses)
