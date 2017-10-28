@@ -15,8 +15,8 @@ for i in range(2,10):
 
 class Fork(object):
     """docstring for Fork"""
-    def __init__(self, id, led_no):
-        self.fork_id = id
+    def __init__(self, fork_id, led_no):
+        self.fork_id = fork_id
         self.led_no = int(led_no)
         signal.signal(signal.SIGINT, self.control_c_handler)
 
@@ -28,12 +28,11 @@ class Fork(object):
         self.mqtt_client.on_log = self.on_log
         self.mqtt_topic = 'kappa/fork'
         self.mqtt_client.will_set(self.mqtt_topic, '______________Will of '+self.fork_id+' _________________\n\n', 0, False)
-        self.mqtt_client.connect('sansa.cs.uoregon.edu', '1883',keepalive=300)
+        self.mqtt_client.connect('sansa.cs.uoregon.edu', '1883')
         self.mqtt_client.subscribe('kappa/butler')
         self.mqtt_client.loop_start()
 
         self.isRegistered = False
-        self.isInUse = False
 
         # Start process
         self.register()
@@ -56,10 +55,8 @@ class Fork(object):
             if content=='forkRegistered':
                 self.isRegistered=True
             if content == 'forkAccepted':
-                self.isInUse = True
                 self.turnOnLED()
             if content  == 'forkDoneUsing':
-                self.isInUse = False
                 self.turnOffLED()
 
 
@@ -75,6 +72,7 @@ class Fork(object):
         pass
 
     def on_disconnect(self, client, userdata, rc):
+        print('disconnect', self.fork_id)
         pass
 
     def on_log(self, client, userdata, level, buf):
@@ -97,9 +95,6 @@ def main():
         print ('Please enter valid led number between 1 to 8')
         sys.exit(1)
     Fork(arr[1], arr[2])
-    Fork('a', 1)
-    Fork('b', 3)
-    #Fork('c', 1)
     while True:
         time.sleep(10)
 

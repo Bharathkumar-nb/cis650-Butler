@@ -150,7 +150,7 @@ class Philosopher(object):
 
     def sendPutFork(self, fork_id, fork_side):
         while True:
-            user_input = raw_input('Press y to put {} fork down\n'.format(fork_side))
+            user_input = raw_input('Press y to put {} fork down\n'.format(fork_id))
             if user_input.lower() == 'y':
                 # print(fork_id+'.putFork')
                 self.mqtt_client.publish(self.mqtt_topic,

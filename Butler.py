@@ -104,6 +104,7 @@ class Butler(object):
             self.turnOnLED(self.semaphore)
             # print(philosopher_id+'.ariseAccepted')
             self.mqtt_client.publish(self.mqtt_topic, philosopher_id+'.ariseAccepted')
+            time.sleep(1)
             self.handleQueue()
 
         # print('After: Semaphore', self.semaphore)
