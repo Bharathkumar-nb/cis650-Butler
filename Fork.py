@@ -3,15 +3,15 @@ from datetime import datetime as dt
 import paho.mqtt.client as paho
 import signal
 #import Lights as light
-#import mraa
+import mraa
 
 leds = []
-'''for i in range(2,10):
+for i in range(2,10):
     led = mraa.Gpio(i)
     led.dir(mraa.DIR_OUT)
     led.write(1)
     leds.append(led)
-'''
+
 
 class Fork(object):
     """docstring for Fork"""
@@ -33,6 +33,7 @@ class Fork(object):
         self.mqtt_client.loop_start()
 
         self.isRegistered = False
+        self.isInUse = False
 
         # Start process
         self.register()
@@ -54,6 +55,13 @@ class Fork(object):
             print(msg.payload)
             if content=='forkRegistered':
                 self.isRegistered=True
+            if content == 'forkAccepted':
+                self.isInUse = True
+                self.turnOnLED()
+            if content  == 'forkDoneUsing':
+                self.isInUse = False
+                self.turnOffLED()
+
 
     # Deal with control-c
     def control_c_handler(self, signum, frame):
@@ -73,6 +81,12 @@ class Fork(object):
         print("log: {}".format(buf)) # only semi-useful IMHO
         # pass
 
+    def turnOnLED(self):
+        leds[self.led_no].write(0)
+
+    def turnOffLED(self):
+        leds[self.led_no].write(1)
+
 def main():
     arr = sys.argv
     if  len (arr) != 3 :
@@ -83,7 +97,7 @@ def main():
         sys.exit(1)
     Fork(arr[1], arr[2])
     Fork('a', 1)
-    Fork('b', 2)
+    Fork('b', 3)
     #Fork('c', 1)
     while True:
         time.sleep(10)
