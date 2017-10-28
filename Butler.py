@@ -2,9 +2,9 @@ import time, socket, sys
 from datetime import datetime as dt
 import paho.mqtt.client as paho
 import signal
-#import Lights as light
 import mraa
 
+# Init LEDs
 leds = []
 for i in range(2,10):
     led = mraa.Gpio(i)
@@ -34,7 +34,7 @@ class Butler(object):
         self.mqtt_client.on_disconnect = self.on_disconnect
         self.mqtt_client.on_log = self.on_log
         self.mqtt_topic = 'kappa/butler'
-        #self.mqtt_client.will_set(self.mqtt_topic, '______________Will of '+self.MY_NAME+' _________________\n\n', 0, False)
+        self.mqtt_client.will_set(self.mqtt_topic, '______________Will of '+self.MY_NAME+' _________________\n\n', 0, False)
         self.mqtt_client.connect('sansa.cs.uoregon.edu', '1883',keepalive=300)
         self.mqtt_client.subscribe([('kappa/fork', 0), ('kappa/philosopher', 0)])
         self.mqtt_client.loop_start()
@@ -47,6 +47,7 @@ class Butler(object):
         print ("Exit")
         sys.exit(0)
 
+    # MQTT Handlers
     def on_connect(self, client, userdata, flags, rc):
         pass
 
@@ -54,16 +55,17 @@ class Butler(object):
         pass
 
     def on_log(self, client, userdata, level, buf):
-        print("log: {}".format(buf)) # only semi-useful IMHO
-        # pass
+        # only semi-useful IMHO
+        if userdata:
+            print("log: {}".format(userdata))
 
     # Butler functions
     def on_message_from_philosopher(self, client, userdata, msg):
-        print(msg.payload)
-        print('Before: Semaphore', self.semaphore)
-        print('Before: philosophers_queue', self.philosophers_queue)
-        print('Before: forkStatuses', self.forkStatuses)
-        print('Before: fork_queue', self.fork_queue)
+        # print(msg.payload)
+        # print('Before: Semaphore', self.semaphore)
+        # print('Before: philosophers_queue', self.philosophers_queue)
+        # print('Before: forkStatuses', self.forkStatuses)
+        # print('Before: fork_queue', self.fork_queue)
         
         philosopher_id, content = msg.payload.split('.')
         if '_' in philosopher_id:
@@ -73,42 +75,41 @@ class Butler(object):
             if self.semaphore > 0:
                 self.semaphore -= 1
                 self.turnOffLED(self.semaphore)
-                print(philosopher_id+'.sitRequestAccepted')
+                # print(philosopher_id+'.sitRequestAccepted')
                 self.mqtt_client.publish(self.mqtt_topic, philosopher_id+'.sitRequestAccepted')
             else:
                 self.philosophers_queue.append(philosopher_id)
-                print(philosopher_id+'.inQueue')
+                # print(philosopher_id+'.inQueue')
                 self.mqtt_client.publish(self.mqtt_topic, philosopher_id+'.inQueue')
         if content == 'forkRequest':
             if not self.forkStatuses[fork_id]:
                 self.forkStatuses[fork_id] = True
-                print(philosopher_id+'.forkAccepted')
+                # print(philosopher_id+'.forkAccepted')
                 self.mqtt_client.publish(self.mqtt_topic, 
                     philosopher_id+'_'+fork_id+'.forkAccepted')
             else:
                 self.fork_queue[fork_id].append(philosopher_id)
-            print(self.forkStatuses)
+            # print(self.forkStatuses)
         if content == 'putFork':
-            print(philosopher_id+'_'+fork_id+'.forkDoneUsing')
+            # print(philosopher_id+'_'+fork_id+'.forkDoneUsing')
             self.mqtt_client.publish(self.mqtt_topic, philosopher_id+'_'+fork_id+'.forkDoneUsing')
             self.forkStatuses[fork_id] = False
             if len(self.fork_queue[fork_id])>0:
                 philosopher_id = self.fork_queue[fork_id].pop(0)
                 self.forkStatuses[fork_id] = True
-                print(philosopher_id+'.forkAccepted')
+                # print(philosopher_id+'.forkAccepted')
                 self.mqtt_client.publish(self.mqtt_topic, philosopher_id+'.forkAccepted')
         if content == 'arise':
             self.semaphore += 1
             self.turnOnLED(self.semaphore)
-            print(philosopher_id+'.ariseAccepted')
+            # print(philosopher_id+'.ariseAccepted')
             self.mqtt_client.publish(self.mqtt_topic, philosopher_id+'.ariseAccepted')
             self.handleQueue()
 
-        print('After: Semaphore', self.semaphore)
-        print('After: philosophers_queue', self.philosophers_queue)
-        print('After: forkStatuses', self.forkStatuses)
-        print('After: fork_queue', self.fork_queue)
-
+        # print('After: Semaphore', self.semaphore)
+        # print('After: philosophers_queue', self.philosophers_queue)
+        # print('After: forkStatuses', self.forkStatuses)
+        # print('After: fork_queue', self.fork_queue)
 
     def on_message_from_fork(self, client, userdata, msg):
         print(msg.payload)
@@ -116,7 +117,7 @@ class Butler(object):
         if content == 'register':
             self.forkStatuses[key] = False
             self.fork_queue[key] = []
-            print(key+'.forkRegistered')
+            # print(key+'.forkRegistered')
             self.mqtt_client.publish(self.mqtt_topic, key+'.forkRegistered')
 
     def handleQueue(self):
@@ -124,9 +125,10 @@ class Butler(object):
             philosopher_id = self.philosophers_queue.pop(0)
             self.turnOffLED(self.semaphore)
             self.semaphore -= 1
-            print(philosopher_id+'.sitRequestAccepted')
+            # print(philosopher_id+'.sitRequestAccepted')
             self.mqtt_client.publish(self.mqtt_topic, philosopher_id+'.sitRequestAccepted')
     
+    # LED functions
     def turnOnLED(self,led_no):
         leds[led_no].write(0)
 

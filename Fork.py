@@ -40,7 +40,7 @@ class Fork(object):
 
     def register(self):
         while not self.isRegistered:
-            print(self.fork_id+'.register')
+            # print(self.fork_id+'.register')
             self.mqtt_client.publish(self.mqtt_topic, self.fork_id+'.register')
             time.sleep(3)
 
@@ -52,7 +52,7 @@ class Fork(object):
 
 
         if fork_id == self.fork_id:
-            print(msg.payload)
+            # print(msg.payload)
             if content=='forkRegistered':
                 self.isRegistered=True
             if content == 'forkAccepted':
@@ -78,8 +78,9 @@ class Fork(object):
         pass
 
     def on_log(self, client, userdata, level, buf):
-        print("log: {}".format(buf)) # only semi-useful IMHO
-        # pass
+        # only semi-useful IMHO
+        if userdata:
+            print("log: {}".format(userdata))
 
     def turnOnLED(self):
         leds[self.led_no].write(0)
