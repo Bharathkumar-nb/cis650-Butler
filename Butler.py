@@ -16,7 +16,7 @@ class Butler(object):
     """docstring for Butler"""
     def __init__(self, max_counter):
         self.MY_NAME = 'Butler'
-        self.led_no = 8
+        self.led_no = 7
         self.semaphore = int(max_counter)
         for i in range(self.semaphore):
             self.turnOnLED(i)

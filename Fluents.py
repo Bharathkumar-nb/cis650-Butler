@@ -68,9 +68,11 @@ class Fluents(object):
         
     # LED functions
     def turnOnLED(self,led_no):
+        led_no = int(led_no)
         leds[led_no].write(0)
 
     def turnOffLED(self,led_no):
+        led_no = int(led_no)
         leds[led_no].write(1)
 
 def main():

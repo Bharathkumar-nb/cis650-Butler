@@ -143,9 +143,11 @@ class Philosopher(object):
         while True:
             user_input = raw_input('Press y to Eat\n')
             if user_input.lower() == 'y':
-                self.mqtt_client.publish(self.mqtt_topic, self.philosopher_id+'.startedEating')
+                self.mqtt_client.publish(self.mqtt_topic, self.philosopher_id+'_'+str(self.led_no)+'.startedEating')
+                self.mqtt_client.loop()
                 self.blinkLED()
-                self.mqtt_client.publish(self.mqtt_topic, self.philosopher_id+'.stoppedEating')
+                self.mqtt_client.publish(self.mqtt_topic, self.philosopher_id+'_'+str(self.led_no)+'.stoppedEating')
+                self.mqtt_client.loop()
                 self.sendPutFork(self.left_fork, 'left')
                 return
 
