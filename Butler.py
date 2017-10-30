@@ -16,6 +16,7 @@ class Butler(object):
     """docstring for Butler"""
     def __init__(self, max_counter):
         self.MY_NAME = 'Butler'
+        self.led_no = 8
         self.semaphore = int(max_counter)
         for i in range(self.semaphore):
             self.turnOnLED(i)
@@ -72,7 +73,8 @@ class Butler(object):
         if content == 'sitRequest':
             if self.semaphore > 0:
                 self.semaphore -= 1
-                self.turnOffLED(self.semaphore)
+                if self.semaphore == 0:
+                    self.turnOnLED(self.led_no)
                 # print(philosopher_id+'.sitRequestAccepted')
                 self.mqtt_client.publish(self.mqtt_topic, philosopher_id+'.sitRequestAccepted')
             else:
@@ -99,7 +101,7 @@ class Butler(object):
                 self.mqtt_client.publish(self.mqtt_topic, philosopher_id+'.forkAccepted')
         if content == 'arise':
             self.semaphore += 1
-            self.turnOnLED(self.semaphore)
+            self.turnOffLED(self.led_no)
             # print(philosopher_id+'.ariseAccepted')
             self.mqtt_client.publish(self.mqtt_topic, philosopher_id+'.ariseAccepted')
             time.sleep(1)
@@ -124,6 +126,8 @@ class Butler(object):
             philosopher_id = self.philosophers_queue.pop(0)
             self.turnOffLED(self.semaphore)
             self.semaphore -= 1
+            if self.semaphore == 0:
+                self.turnOnLED(self.led_no)
             # print(philosopher_id+'.sitRequestAccepted')
             self.mqtt_client.publish(self.mqtt_topic, philosopher_id+'.sitRequestAccepted')
     

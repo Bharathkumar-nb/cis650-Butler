@@ -28,7 +28,7 @@ class Fork(object):
         self.mqtt_client.on_log = self.on_log
         self.mqtt_topic = 'kappa/fork'
         self.mqtt_client.will_set(self.mqtt_topic, '______________Will of '+self.fork_id+' _________________\n\n', 0, False)
-        self.mqtt_client.connect('sansa.cs.uoregon.edu', '1883')
+        self.mqtt_client.connect('sansa.cs.uoregon.edu', '1883', keepalive=300)
         self.mqtt_client.subscribe('kappa/butler')
         self.mqtt_client.loop_start()
 
@@ -93,6 +93,10 @@ def main():
         print ('Please enter valid led number between 1 to 8')
         sys.exit(1)
     Fork(arr[1], arr[2])
+    Fork ('b',2)
+    Fork ('c',3)
+    Fork ('d',4)
+    Fork ('e',5)
     while True:
         time.sleep(10)
 
