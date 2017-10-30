@@ -18,8 +18,6 @@ class Butler(object):
         self.MY_NAME = 'Butler'
         self.led_no = 7
         self.semaphore = int(max_counter)
-        for i in range(self.semaphore):
-            self.turnOnLED(i)
         self.philosophers_queue = []
         self.forkStatuses = {}
         self.fork_queue = {}

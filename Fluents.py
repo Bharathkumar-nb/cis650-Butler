@@ -55,12 +55,13 @@ class Fluents(object):
 
     # Fluents functions
     def on_message(self, client, userdata, msg):
-        print(msg.payload)
+        
         philosopher_id, content = msg.payload.split('.')
         if '_' in philosopher_id:
             philosopher_id, led_no = philosopher_id.split('_')
 
         if self.philosopher_id == philosopher_id:
+            print(msg.payload)
             if content == 'startedEating':
                 self.turnOnLED(led_no)
             if content == 'stoppedEating':
