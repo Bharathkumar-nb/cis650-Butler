@@ -55,13 +55,13 @@ class Assert(object):
         if mapped_msg != '':
             self.traces.append(mapped_msg)
 
-        if(msg.payload == self.expr1) :
+        if(mapped_msg == self.expr1) :
             if self.isExpr2:
                 self.expr1 = True
             else:
                 print(self.traces)
                 print("Assert1")
-        elif(msg.payload == self.expr2):
+        elif(mapped_msg == self.expr2):
             if not self.expr1:
                 self.isExpr2 = True
             else:
@@ -73,7 +73,8 @@ def main():
     if  len (arr) != 3 :
         print ('Please enter valid input, e.g. python weak_until.py <expr1> <expr2>')
         sys.exit(1)
-    Assert(mapping(arr[1]), mapping(arr[2]))
+    
+    Assert(arr[1], arr[2])
     while True:
         time.sleep(10)
 

@@ -3,6 +3,8 @@ def mapping(msg): #phil[0].a.get # phil[0].sitdown
 	msg = msg.split('.')[1:]
 	if len(msg) == 2:
 		fork_id,msg = msg
+	else:
+		msg =msg [0]
 
 	if (msg == 'sitdown'):
 		return philosopher_id+'.sitRequestAccepted'
@@ -19,7 +21,7 @@ def mapping(msg): #phil[0].a.get # phil[0].sitdown
 def reverse_mapping(msg): #1.sitReqAcc #1_a.forkAcc #1_1.startEat
 	philosopher_id,msg = msg.split('.')
 	if '_' in philosopher_id:
-		philosopher_id,fork_id = msg.split('_')
+		philosopher_id,fork_id = philosopher_id.split('_')
 
 	if (msg == 'sitRequestAccepted'):
 		return 'phil['+philosopher_id+'].sitdown'

@@ -2,15 +2,15 @@ import time, socket, sys
 from datetime import datetime as dt
 import paho.mqtt.client as paho
 import signal
-#import Lights as light
-# import mraa
 
-# leds = []
-# for i in range(2,10):
-#     led = mraa.Gpio(i)
-#     led.dir(mraa.DIR_OUT)
-#     led.write(1)
-#     leds.append(led)
+import mraa
+
+leds = []
+for i in range(2,10):
+    led = mraa.Gpio(i)
+    led.dir(mraa.DIR_OUT)
+    led.write(1)
+    leds.append(led)
 
 
 class Fork(object):
@@ -65,12 +65,11 @@ class Fork(object):
             # print(msg.payload)
             if content=='forkRegistered':
                 self.isRegistered=True
-            # if content == 'forkAccepted':
-            #     self.turnOnLED()
-            # if content  == 'forkDoneUsing':
-            #     self.turnOffLED()
+            if content == 'forkAccepted':
+                self.turnOnLED()
+            if content  == 'forkDoneUsing':
+                self.turnOffLED()
 
-    '''
 
     # LED functions
     def turnOnLED(self):
@@ -78,8 +77,6 @@ class Fork(object):
 
     def turnOffLED(self):
         leds[self.led_no].write(1)
-
-    '''
 
     # Fork Functions
     def register(self):
@@ -97,6 +94,8 @@ def main():
         print ('Please enter valid led number between 1 to 8')
         sys.exit(1)
     Fork(arr[1], arr[2])
+    Fork('b',2)
+    Fork('c',3)
     
     while True:
         time.sleep(10)

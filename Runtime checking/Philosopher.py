@@ -2,17 +2,18 @@ import time, socket, sys
 from datetime import datetime as dt
 import paho.mqtt.client as paho
 import signal
-# import mraa
+import mraa
 
-# # Init LEDs
-# leds = []
-# for i in range(2,10):
-#     led = mraa.Gpio(i)
-#     # led.dir(mraa.DIR_OUT)
-#     leds.append(led)
+# Init LEDs
+leds = []
+for i in range(2,10):
+    led = mraa.Gpio(i)
+    # led.dir(mraa.DIR_OUT)
+    leds.append(led)
 
 class Philosopher(object):
     """docstring for Philosopher"""
+
     def __init__(self, philosopher_id, led_no, left_fork, right_fork):
         self.philosopher_id = philosopher_id
         self.led_no = int(led_no)
@@ -42,6 +43,7 @@ class Philosopher(object):
 
         # Start process
         self.sendSitRequest()
+
 
     # Deal with control-c
     def control_c_handler(self, signum, frame):
@@ -75,7 +77,7 @@ class Philosopher(object):
             # print('Before: isRightForkAccepted',self.isRightForkAccepted)
             if content == 'sitRequestAccepted':
                 self.isAccepted = True
-                # self.turnOnLED()
+                self.turnOnLED()
                 self.sendForkRequest(self.right_fork)
             if content == 'inQueue':
                 self.isWaiting = True
@@ -95,8 +97,8 @@ class Philosopher(object):
                 self.isAccepted = False
                 self.isRightForkAccepted = False
                 self.isRightForkUsed = False
-                # self.turnOffLED()
-                # print(self.philosopher_id+'.sitRequest')
+                self.turnOffLED()
+                print(self.philosopher_id+'.sitRequest')
                 self.mqtt_client.publish(self.mqtt_topic, self.philosopher_id+'.sitRequest')
 
 
@@ -104,7 +106,7 @@ class Philosopher(object):
             # print('After: isWaiting',self.isWaiting)
             # print('After: isRightForkAccepted',self.isRightForkAccepted)
 
-    '''
+    
 
     # LED functions
     def turnOnLED(self):
@@ -120,7 +122,7 @@ class Philosopher(object):
             self.turnOnLED()
             time.sleep(0.5)
 
-    '''
+    
 
     # Philosoher functions
     def sendSitRequest(self):
@@ -129,7 +131,7 @@ class Philosopher(object):
         self.isWaiting = False
         self.isRightForkAccepted = False
         self.isRightForkUsed = False
-        # self.turnOffLED()
+        self.turnOffLED()
         while not self.isAccepted and not self.isWaiting:
             # print(self.philosopher_id+'.sitRequest')
             self.mqtt_client.publish(self.mqtt_topic, self.philosopher_id+'.sitRequest')
@@ -149,7 +151,7 @@ class Philosopher(object):
             if user_input.lower() == 'y':
                 self.mqtt_client.publish(self.mqtt_topic, self.philosopher_id+'_'+str(self.led_no)+'.startedEating')
                 self.mqtt_client.loop()
-                # self.blinkLED()
+                self.blinkLED()
                 self.mqtt_client.publish(self.mqtt_topic, self.philosopher_id+'_'+str(self.led_no)+'.stoppedEating')
                 self.mqtt_client.loop()
                 self.sendPutFork(self.left_fork, 'left')
@@ -160,8 +162,7 @@ class Philosopher(object):
             user_input = raw_input('Press y to put {} fork down\n'.format(fork_id))
             if user_input.lower() == 'y':
                 # print(fork_id+'.putFork')
-                self.mqtt_client.publish(self.mqtt_topic,
-                self.philosopher_id+'_'+fork_id+'.putFork')
+                self.mqtt_client.publish(self.mqtt_topic,self.philosopher_id+'_'+fork_id+'.putFork')
                 return
     
     def sendArise(self):

@@ -2,15 +2,15 @@ import time, socket, sys
 from datetime import datetime as dt
 import paho.mqtt.client as paho
 import signal
-# import mraa
+import mraa
 
-# # Init LEDs
-# leds = []
-# for i in range(2,10):
-#     led = mraa.Gpio(i)
-#     led.dir(mraa.DIR_OUT)
-#     led.write(1)
-#     leds.append(led)
+# Init LEDs
+leds = []
+for i in range(2,10):
+    led = mraa.Gpio(i)
+    led.dir(mraa.DIR_OUT)
+    led.write(1)
+    leds.append(led)
 
 class Butler(object):
     """docstring for Butler"""
@@ -71,8 +71,8 @@ class Butler(object):
         if content == 'sitRequest':
             if self.semaphore > 0:
                 self.semaphore -= 1
-                # if self.semaphore == 0:
-                #     self.turnOnLED(self.led_no)
+                if self.semaphore == 0:
+                    self.turnOnLED(self.led_no)
                 # print(philosopher_id+'.sitRequestAccepted')
                 self.mqtt_client.publish(self.mqtt_topic, philosopher_id+'.sitRequestAccepted')
             else:
@@ -99,7 +99,7 @@ class Butler(object):
                 self.mqtt_client.publish(self.mqtt_topic, philosopher_id+'.forkAccepted')
         if content == 'arise':
             self.semaphore += 1
-            # self.turnOffLED(self.led_no)
+            self.turnOffLED(self.led_no)
             # print(philosopher_id+'.ariseAccepted')
             self.mqtt_client.publish(self.mqtt_topic, philosopher_id+'.ariseAccepted')
             time.sleep(1)
@@ -122,14 +122,14 @@ class Butler(object):
     def handleQueue(self):
         if len(self.philosophers_queue) != 0:
             philosopher_id = self.philosophers_queue.pop(0)
-            # self.turnOffLED(self.semaphore)
+            self.turnOffLED(self.semaphore)
             self.semaphore -= 1
-            # if self.semaphore == 0:
-            #     self.turnOnLED(self.led_no)
-            # print(philosopher_id+'.sitRequestAccepted')
+            if self.semaphore == 0:
+                self.turnOnLED(self.led_no)
+            #print(philosopher_id+'.sitRequestAccepted')
             self.mqtt_client.publish(self.mqtt_topic, philosopher_id+'.sitRequestAccepted')
     
-    '''
+    
 
     # LED functions
     def turnOnLED(self,led_no):
@@ -138,7 +138,7 @@ class Butler(object):
     def turnOffLED(self,led_no):
         leds[led_no].write(1)
 
-    '''
+    
 
 def main():
     arr = sys.argv
