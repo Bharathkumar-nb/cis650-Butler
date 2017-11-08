@@ -14,7 +14,9 @@ class Assert(object):
         self.expr2 = expr2
         self.isExpr1 = False
         self.isExpr2 = False
-       
+        self.traces = []
+
+
         # Handle Ctrl+C
         signal.signal(signal.SIGINT, self.control_c_handler)
 
@@ -50,6 +52,10 @@ class Assert(object):
 
     # Fluents functions
     def on_message(self, client, userdata, msg):
+        mapped_msg = reverse_mapping(msg.payload)
+        if mapped_msg != '':
+            self.traces.append(mapped_msg)
+
         if(msg.payload == self.expr1) :
             if self.isExpr1 == True:
                 print('Assert1')
@@ -67,7 +73,7 @@ def main():
     if  len (arr) != 3 :
         print ('Please enter valid input, e.g. python weak_until.py <expr1> <expr2>')
         sys.exit(1)
-    Assert(regex_resolver(arr[1]), regex_resolver(arr[2]))
+    Assert(mapping(arr[1]), mapping(arr[2]))
     while True:
         time.sleep(10)
 
