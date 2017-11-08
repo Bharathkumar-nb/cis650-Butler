@@ -2,6 +2,7 @@ import time, socket, sys
 from datetime import datetime as dt
 import paho.mqtt.client as paho
 import signal
+from MappingResolver import *
 
 class Assert(object):
     """docstring for Fluents"""
@@ -67,7 +68,7 @@ def main():
     if  len (arr) != 3 :
         print ('Please enter valid input, e.g. python weak_until.py <expr1> <expr2>')
         sys.exit(1)
-    Assert(arr[1], arr[2])
+    Assert(regex_resolver(arr[1]), regex_resolver(arr[2]))
     while True:
         time.sleep(10)
 

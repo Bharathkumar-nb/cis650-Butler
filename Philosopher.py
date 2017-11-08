@@ -35,7 +35,7 @@ class Philosopher(object):
         self.mqtt_client.on_disconnect = self.on_disconnect
         self.mqtt_client.on_log = self.on_log
         self.mqtt_topic = 'kappa/philosopher'
-        self.mqtt_client.will_set(self.mqtt_topic, '______________Will of '+self.philosopher_id+' _________________\n\n', 0, False)
+        self.mqtt_client.will_set(self.mqtt_topic, '___Will of '+self.philosopher_id+' ___\n\n', 0, False)
         self.mqtt_client.connect('sansa.cs.uoregon.edu', '1883')
         self.mqtt_client.subscribe('kappa/butler')
         self.mqtt_client.loop_start()
