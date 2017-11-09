@@ -3,6 +3,7 @@ from datetime import datetime as dt
 import paho.mqtt.client as paho
 import signal
 from MappingResolver import *
+import Tkinter as tk
 
 class Assert(object):
     """docstring for Fluents"""
@@ -31,6 +32,14 @@ class Assert(object):
         self.mqtt_client.connect('sansa.cs.uoregon.edu', '1883')
         self.mqtt_client.subscribe([('kappa/philosopher', 0),('kappa/butler', 0)])
         self.mqtt_client.loop_start()
+        #Tkinter initialization
+        self.root = tk.Tk()
+        self.status = tk.Label(self.root, text="Traces for implication property\n\n", justify="left")
+        self.status.grid()
+        self.root.minsize(400, 400)
+        #self.gui_update()
+        self.root.mainloop()
+
 
     # Deal with control-c
     def control_c_handler(self, signum, frame):
@@ -39,6 +48,21 @@ class Assert(object):
         self.mqtt_client.loop_stop()  # waits until DISCONNECT message is sent out
         print ("Exit")
         sys.exit(0)
+
+    def gui_update(self):
+        self.current_status = self.status["text"]
+        self.current_status += 'ERROR: Violation of LTL property\n'
+        self.current_status += 'Traces for error\n'
+        isFirstIteration = True
+        for trace in self.traces:
+            if not isFirstIteration:
+                self.current_status +=  " -> "
+            else:
+                isFirstIteration = False
+                self.current_status +=  "      "
+            self.current_status +=  trace + '\n'
+        self.current_status += '\n\n'
+        self.status["text"] = self.current_status
 
     # MQTT Handlers
     def on_connect(self, client, userdata, flags, rc):
@@ -58,6 +82,7 @@ class Assert(object):
             
         if(mapped_msg == self.expr1) :
             if self.isExpr1 == True:
+                self.root.after(1000, self.gui_update())
                 print(self.traces)
                 print('Assert1')
             else:
@@ -65,6 +90,8 @@ class Assert(object):
         elif(mapped_msg == self.expr2):
             if not self.isExpr1:
                 # assert
+                self.root.after(1000, self.gui_update())
+                
                 print(self.traces)
                 print("Assert2")
             else:

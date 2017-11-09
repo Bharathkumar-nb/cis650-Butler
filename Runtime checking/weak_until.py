@@ -1,3 +1,5 @@
+import Tkinter as tk
+
 import time, socket, sys
 from datetime import datetime as dt
 import paho.mqtt.client as paho
@@ -30,6 +32,13 @@ class Assert(object):
         self.mqtt_client.connect('sansa.cs.uoregon.edu', '1883')
         self.mqtt_client.subscribe('kappa/philosopher', 0)
         self.mqtt_client.loop_start()
+         #Tkinter initialization
+        self.root = tk.Tk()
+        self.status = tk.Label(self.root, text="Weak Until\n\n", justify="left")
+        self.status.grid()
+        self.root.minsize(400, 400)
+        self.root.mainloop()
+
 
     # Deal with control-c
     def control_c_handler(self, signum, frame):
@@ -38,6 +47,21 @@ class Assert(object):
         self.mqtt_client.loop_stop()  # waits until DISCONNECT message is sent out
         print ("Exit")
         sys.exit(0)
+
+    def gui_update(self):
+        self.current_status = self.status["text"]
+        self.current_status += 'ERROR: Violation of LTL property\n'
+        self.current_status += 'Traces for error\n'
+        isFirstIteration = True
+        for trace in self.traces:
+            if not isFirstIteration:
+                self.current_status +=  " -> "
+            else:
+                isFirstIteration = False
+                self.current_status +=  "      "
+            self.current_status +=  trace + '\n'
+        self.current_status += '\n\n'
+        self.status["text"] = self.current_status
 
     # MQTT Handlers
     def on_connect(self, client, userdata, flags, rc):
@@ -60,12 +84,15 @@ class Assert(object):
                 self.expr1 = True
             else:
                 print(self.traces)
+                self.root.after(1000, self.gui_update())
                 print("Assert1")
         elif(mapped_msg == self.expr2):
             if not self.expr1:
                 self.isExpr2 = True
             else:
+
                 print(self.traces)
+                self.root.after(1000, self.gui_update())
                 print("Assert2")
 
 def main():

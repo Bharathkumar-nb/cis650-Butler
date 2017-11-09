@@ -3,8 +3,6 @@ def mapping(msg): #phil[0].a.get # phil[0].sitdown
 	msg = msg.split('.')[1:]
 	if len(msg) == 2:
 		fork_id,msg = msg
-	else:
-		msg =msg [0]
 
 	if (msg == 'sitdown'):
 		return philosopher_id+'.sitRequestAccepted'
